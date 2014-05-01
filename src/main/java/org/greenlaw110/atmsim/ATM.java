@@ -210,7 +210,7 @@ public class ATM {
                 maxValue -= dispenseValue;
                 output.add(bucket);
             }
-            return C.list(output);
+            return output;
         } catch (NoteDispenseException e) {
             revert(output);
             throw e;
