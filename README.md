@@ -18,7 +18,7 @@ Installation
 Run the application
 --------------------
 
-Type `mvn exec:java` to enter the command line shell to the atm sim program. Then you can see something like
+Type `mvn package exec:java` to enter the command line shell to the atm sim program. Then you can see something like
 
 ```
 no atm found. prepare to create default atm:new ATM created:
@@ -74,4 +74,12 @@ ATM state
 50th X 400 = 20000
 ```
 
-*Note* you can use word complete like what you did in linux shell. E.g. type `cre` and then type tab you will get `create_atm` immediately
+**Note** you can use word complete like what you did in linux shell. E.g. type `cre` and then type tab you will get `create_atm` immediately
+
+Program Depencises
+------------------------
+
+* junit: Used to do unit test
+* osgl-tool: My opensource project that provides a library help me appling funcitonal programming in Java 6/7. It also provides a lot an utilties that make Java programming be more fun and more expressive
+* beust jcommander: Used to process command line arguments like '-20 100 -50 60' etc
+* jline: An nice library to provide console programming support
