@@ -108,13 +108,6 @@ public class Bucket implements NoteDeck {
         return type().value();
     }
 
-    /**
-     * Reset the bucket noteCount to zero
-     */
-    public void clear() {
-        noteCount = 0;
-    }
-
     public static Bucket of(NoteType type) {
         return new Bucket(type, 0);
     }
@@ -128,18 +121,6 @@ public class Bucket implements NoteDeck {
      */
     public static enum F {
         ;
-
-        /**
-         * The function to clear a bucket
-         */
-        public static _.F1<Bucket, Void> CLEAR = new _.F1<Bucket, Void>() {
-            @Override
-            public Void apply(Bucket bucket) throws NotAppliedException, _.Break {
-                bucket.clear();
-                return null;
-            }
-        };
-
         public static _.F1<Bucket, Integer> VALUE_OF = new _.F1<Bucket, Integer>() {
             @Override
             public Integer apply(Bucket bucket) throws NotAppliedException, _.Break {
