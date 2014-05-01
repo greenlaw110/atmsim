@@ -86,3 +86,16 @@ Program Depencises
 * osgl-tool: My opensource project that provides a library help me appling funcitonal programming in Java 6/7. It also provides a lot an utilties that make Java programming be more fun and more expressive
 * beust jcommander: Used to process command line arguments like '-20 100 -50 60' etc
 * jline: An nice library to provide console programming support
+
+Code Metric
+------------------
+
+```
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Java                            23            188            355            743
+-------------------------------------------------------------------------------
+SUM:                            23            188            355            743
+-------------------------------------------------------------------------------
+```
