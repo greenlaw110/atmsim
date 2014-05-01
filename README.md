@@ -82,10 +82,10 @@ ATM state
 Program Depencises
 ------------------------
 
-* junit: Used to do unit test
-* osgl-tool: My opensource project that provides a library help me appling funcitonal programming in Java 6/7. It also provides a lot an utilties that make Java programming be more fun and more expressive
-* beust jcommander: Used to process command line arguments like '-20 100 -50 60' etc
-* jline: An nice library to provide console programming support
+* [junit](http://junit.org): Used to do unit test
+* [osgl-tool](https://github.com/greenlaw110/java-tool): My opensource project that provides a library help me appling funcitonal programming in Java 6/7. It also provides a lot an utilties that make Java programming be more fun and more expressive
+* [jcommander](http://jcommander.org/): Used to process command line arguments, something like '-20 100 -50 60' etc
+* [jline](http://jline.sourceforge.net/): An nice library to provide console programming support
 
 Code Metric
 ------------------
