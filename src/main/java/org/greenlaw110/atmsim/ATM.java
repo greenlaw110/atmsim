@@ -25,7 +25,7 @@ public class ATM {
     private EnumMap<NoteType, Bucket> buckets = new EnumMap<NoteType, Bucket>(NoteType.class);
 
     /**
-     * Organize all bucket instances in a list so that we can easily iterate upon them
+     * Organize all bucket instances in a list so that we can easily iterate through them
      */
     private C.List<Bucket> bucketList;
 
