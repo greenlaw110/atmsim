@@ -22,6 +22,15 @@ public class Help extends CommandBase {
 
     @Override
     public void handleEvent(ConsoleReader console, String... args) throws IOException {
+        if (args.length > 0) {
+            String nm = args[0];
+            Command cmd = sh().findCommand(nm);
+            if (cmd == UnknownCommand.INSTANCE) {
+                error("Unknown command: %s", nm);
+            }
+            echo(console, cmd.help());
+            return;
+        }
         String help = S.join("\n", sh().commands().map(_.F.asString()));
         echo(console, help);
     }

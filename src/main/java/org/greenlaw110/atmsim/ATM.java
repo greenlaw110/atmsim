@@ -4,15 +4,17 @@ import org.greenlaw110.atmsim.dispense.BigNoteFirst;
 import org.osgl._;
 import org.osgl.util.C;
 import org.osgl.util.E;
-import org.osgl.util.N;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 
 /**
  * Simulate the ATM note dispense logic
+ *
+ * @see org.greenlaw110.atmsim.NoteType
+ * @see org.greenlaw110.atmsim.Bucket
+ * @see org.greenlaw110.atmsim.DispenseStrategy
  */
 public class ATM {
 
@@ -44,7 +46,7 @@ public class ATM {
     /**
      * Keep track of the sum of all buckets values
      */
-    private int totalValue;
+    private int value;
 
     /**
      * Construct an empty ATM without any notes
@@ -66,19 +68,58 @@ public class ATM {
      *
      * @param buckets a list of buckets contains notes
      */
-    public ATM(List<Bucket> buckets) {
+    public ATM(Iterable<? extends Bucket> buckets) {
         this(buckets, new BigNoteFirst());
     }
 
     /**
      * Construct an ATM with a list of buckets in which the notes will
-     * be transferred to this ATM and the dispense strategy specified
+     * be transferred to this ATM and with dispense strategy specified
      *
      * @param buckets   a list of buckets contains notes
      * @param strategy the note dispense strategy
      */
-    public ATM(List<Bucket> buckets, DispenseStrategy strategy) {
+    public ATM(Iterable<? extends Bucket> buckets, DispenseStrategy strategy) {
         init(strategy, buckets);
+    }
+
+    /**
+     * Initialize the bucket instances in this ATM
+     *
+     * @param algorithm the dispense strategy
+     * @param buckets   a list of buckets contains notes to be filled
+     *                  into buckets of this ATM
+     * @return this ATM instance
+     */
+    private void init(DispenseStrategy algorithm, Iterable<? extends Bucket> buckets) {
+        setStrategy(algorithm);
+
+        for (NoteType type : NoteType.values()) {
+            this.buckets.put(type, Bucket.of(type));
+        }
+
+        // this will be an readonly immutable list
+        bucketList = C.list(this.buckets.values());
+
+        transferFrom(buckets);
+    }
+
+    private void transferFrom(Iterable<? extends Bucket> buckets) {
+        for (Bucket bucket: buckets) {
+            value += bucket.value();
+            this.buckets.get(bucket.type()).transferFrom(bucket);
+        }
+    }
+
+    /**
+     * Set the {@link org.greenlaw110.atmsim.NoteDeckFormat format}
+     * @param format
+     * @return this ATM instance
+     */
+    public ATM setFormat(NoteDeckFormat format) {
+        E.NPE(format);
+        fmt = format;
+        return this;
     }
 
     /**
@@ -94,60 +135,6 @@ public class ATM {
     }
 
     /**
-     * Set the {@link org.greenlaw110.atmsim.NoteDeckFormat format}
-     * @param format
-     * @return this ATM instance
-     */
-    public ATM setFormat(NoteDeckFormat format) {
-        E.NPE(format);
-        fmt = format;
-        return this;
-    }
-
-    /**
-     * fill this ATM with a list of buckets
-     *
-     * @param buckets the buckets in which all notes to be
-     *                transferred to buckets in this ATM
-     */
-    private void fill(List<Bucket> buckets) {
-        for (Bucket bucket : buckets) {
-            totalValue += bucket.value();
-            bucketByType(bucket.type()).transferFrom(bucket);
-        }
-    }
-
-    /**
-     * Initialize the bucket instances in this ATM
-     *
-     * @param algorithm the dispense strategy
-     * @param buckets   a list of buckets contains notes to be filled
-     *                  into buckets of this ATM
-     * @return this ATM instance
-     */
-    private void init(DispenseStrategy algorithm, List<Bucket> buckets) {
-        setStrategy(algorithm);
-        for (NoteType type : NoteType.values()) {
-            this.buckets.put(type, Bucket.of(type));
-        }
-        // this will be an readonly immutable list
-        bucketList = C.list(this.buckets.values());
-        fill(buckets);
-    }
-
-
-    /**
-     * Returns a {@link org.greenlaw110.atmsim.Bucket bucket} by
-     * {@link org.greenlaw110.atmsim.NoteType specified}
-     *
-     * @param type the note type
-     * @return the bucket corresponding to the note
-     */
-    private Bucket bucketByType(NoteType type) {
-        return buckets.get(type);
-    }
-
-    /**
      * Returns a read only view to all buckets of this ATM
      *
      * @return a list of {@link org.greenlaw110.atmsim.BucketView} of all
@@ -159,11 +146,8 @@ public class ATM {
 
     // revert the dispense operation from
     // a collection of buckets
-    private void revert(Collection<Bucket> buckets) {
-        for (Bucket bucket : buckets) {
-            totalValue += bucket.value();
-            bucketByType(bucket.type()).transferFrom(bucket);
-        }
+    private void revert(Iterable<? extends Bucket> buckets) {
+        transferFrom(buckets);
     }
 
     /**
@@ -175,19 +159,19 @@ public class ATM {
      * @return a list of buckets contains notes been dispensed from the ATM
      * @throws org.greenlaw110.atmsim.NoteDispenseException if the ATM failed
      *                                                      to dispense the required money value
-     * @see DispenseStrategy#comparator(int)
+     * @see DispenseStrategy#comparator()
      */
     public List<Bucket> dispense(int value) throws NoteDispenseException {
         E.illegalArgumentIf(value < 0, "oops, can't dispense notes for negative value");
-        if (value > totalValue || value % NoteType.GCD_VALUE != 0) {
+        if (value > this.value || value % NoteType.GCD_VALUE != 0) {
             throw new NoteDispenseException(value);
         }
-        C.List<Bucket> notes = C.newList();
+        C.List<Bucket> cash = C.newList();
         int originalValue = value;
         try {
             while (value > 0) {
                 // sort/filter available buckets for notes dispense
-                Comparator<Bucket> cmp = strategy.comparator(value);
+                Comparator<Bucket> cmp = strategy.comparator();
                 C.List<Bucket> l = bucketList.sort(cmp).filter(F.filter(value));
                 if (l.isEmpty()) {
                     throw new NoteDispenseException(originalValue);
@@ -213,24 +197,24 @@ public class ATM {
                 // prepare the dispense bucket and commit notes transfer
                 Bucket bucket = Bucket.of(noteType);
                 bucket.transferFrom(atmBucket, transferCount);
-                totalValue -= dispenseValue;
-                notes.add(bucket);
+                this.value -= dispenseValue;
+                cash.add(bucket);
             }
-            return notes;
         } catch (NoteDispenseException e) {
-            revert(notes);
+            revert(cash);
             throw e;
         } catch (RuntimeException e) {
-            revert(notes);
+            revert(cash);
             throw e;
         }
+        return cash;
     }
 
     /**
      * Returns the total value of all notes in this ATM
      */
     public int value() {
-        return bucketList.reduce(0, N.F.adder(Bucket.F.VALUE_OF, Integer.class));
+        return value;
     }
 
     @Override
@@ -241,7 +225,7 @@ public class ATM {
     /**
      * The function object namespace
      */
-    private enum F {
+    private static enum F {
         ;
 
         /**

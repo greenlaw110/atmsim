@@ -45,7 +45,9 @@ public class Bucket implements NoteDeck {
     }
 
     /**
-     * Transfer all notes from bucket specified to this bucket
+     * Transfer all notes from bucket specified to this bucket.
+     * The note type of specified bucket must match the type
+     * of this bucket
      *
      * @param bucket the bucket in which notes will be
      *        transfer to this bucket

@@ -28,7 +28,7 @@ public class Shell {
     private C.List<Command> commands = C.newList();
 
     private Shell() {
-        register(new Help(), new Exit(), CreateATM.INSTANCE, new ATMState(), new Dispense());
+        register(new Help(), new Exit(), AtmCommand.INSTANCE, new Dispense());
     }
 
     ATM atm() {
@@ -64,7 +64,7 @@ public class Shell {
         return C.list(commands);
     }
 
-    private Command findCommand(String name) {
+    Command findCommand(String name) {
         return commands.findFirst(F.CMD_NAME.andThen(_.F.eq().curry(name))).orElse(UnknownCommand.INSTANCE);
     }
 
@@ -81,7 +81,7 @@ public class Shell {
 
         if (null == atm()) {
             console.print("no atm found. prepare to create default atm:");
-            CreateATM.INSTANCE.handleEvent(console);
+            AtmCommand.INSTANCE.createATM(console, 100, 40);
         }
 
         String line;

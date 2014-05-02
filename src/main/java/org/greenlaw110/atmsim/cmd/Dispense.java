@@ -16,8 +16,8 @@ public class Dispense extends CommandBase {
 
     @Override
     public String help() {
-        return "dispense notes from ATM. \n\t" +
-                "Usage: dispense <value>";
+        return "dispense notes from ATM. Usage: \n\t" +
+                "dispense <value>";
     }
 
     @Override
