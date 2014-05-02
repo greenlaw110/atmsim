@@ -10,7 +10,13 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Handle "dispense" command
+ * Handle "dispense" command. This command accept a positive integer
+ * as the value to be dispensed from the ATM. After notes
+ * dispensed from ATM successfully, this command will print out the
+ * note deck been dispensed and then followed by the ATM state.
+ *
+ * <p>If ATM failed to dispense the amount request, it simply
+ * print out the error message and return</p>
  */
 public class Dispense extends CommandBase {
 

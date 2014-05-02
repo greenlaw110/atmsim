@@ -19,6 +19,9 @@ import java.util.Arrays;
  * Once user has specified the parameters, it means to
  * create an new ATM initialized with the number of twenties
  * and fifties notes
+ *
+ * If no parameter supplied, then this command print out
+ * the ATM state
  */
 public class AtmCommand extends CommandBase {
 
