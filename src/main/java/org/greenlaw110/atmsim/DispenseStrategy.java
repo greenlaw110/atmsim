@@ -2,7 +2,7 @@ package org.greenlaw110.atmsim;
 
 import java.util.Comparator;
 
-public interface DispenseAlgorithm {
+public interface DispenseStrategy {
     /**
      * Returns a comparator used to sort the buckets in an ATM based on the
      * money value requested to dispense from the ATM.

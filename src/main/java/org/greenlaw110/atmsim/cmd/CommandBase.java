@@ -40,7 +40,7 @@ public abstract class CommandBase implements Command {
     public String toString() {
         String help = help();
         if (S.notEmpty(help)) {
-            return S.fmt("%s\t%s", name(), help);
+            return S.fmt("%s: %s", name(), help);
         } else {
             return name();
         }

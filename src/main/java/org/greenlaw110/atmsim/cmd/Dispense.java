@@ -1,6 +1,7 @@
 package org.greenlaw110.atmsim.cmd;
 
 import jline.console.ConsoleReader;
+import org.greenlaw110.atmsim.ATM;
 import org.greenlaw110.atmsim.Bucket;
 import org.greenlaw110.atmsim.NoteDeckFormat;
 import org.greenlaw110.atmsim.NoteDispenseException;
@@ -15,8 +16,8 @@ public class Dispense extends CommandBase {
 
     @Override
     public String help() {
-        return "dispense notes from ATM. Usage:\n\t\t" +
-                "dispense <value>";
+        return "dispense notes from ATM. \n\t" +
+                "Usage: dispense <value>";
     }
 
     @Override
@@ -34,9 +35,10 @@ public class Dispense extends CommandBase {
             if (value < 0) {
                 error("please specify non-negative number for value");
             }
-            List<Bucket> buckets = atm().dispense(value);
+            ATM atm = atm();
+            List<Bucket> buckets = atm.dispense(value);
             echo(console, "Successfully dispensed from ATM: \n%s", NoteDeckFormat.INSTANCE.format(buckets));
-            echo(console, "\n%s", atm());
+            echo(console, "\n%s", atm);
         } catch (NumberFormatException e) {
             error("please specify value in digits");
         } catch (NoteDispenseException e) {

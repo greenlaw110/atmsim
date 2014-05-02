@@ -5,7 +5,7 @@ import jline.console.ConsoleReader;
 import java.io.IOException;
 
 /**
- * Created by luog on 2/05/2014.
+ * handles any unknown command
  */
 public class UnknownCommand extends CommandBase {
 

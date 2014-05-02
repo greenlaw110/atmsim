@@ -2,7 +2,6 @@ package org.greenlaw110.atmsim;
 
 import org.greenlaw110.atmsim.dispense.BigNoteFirst;
 import org.osgl._;
-import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.N;
@@ -30,10 +29,10 @@ public class ATM {
     private C.List<Bucket> bucketList;
 
     /**
-     * The dispense algorithm. Default value is
+     * The dispense strategy. Default value is
      * {@link org.greenlaw110.atmsim.dispense.BigNoteFirst}
      */
-    private DispenseAlgorithm algorithm;
+    private DispenseStrategy strategy;
 
     /**
      * The format that help to print out the state
@@ -45,7 +44,7 @@ public class ATM {
     /**
      * Keep track of the sum of all buckets values
      */
-    private int maxValue;
+    private int totalValue;
 
     /**
      * Construct an empty ATM without any notes
@@ -55,10 +54,10 @@ public class ATM {
     }
 
     /**
-     * Construct an empty ATM with {@link DispenseAlgorithm} specified
+     * Construct an empty ATM with {@link DispenseStrategy} specified
      */
-    public ATM(DispenseAlgorithm algorithm) {
-        this(C.emptyListOf(Bucket.class), algorithm);
+    public ATM(DispenseStrategy strategy) {
+        this(C.emptyListOf(Bucket.class), strategy);
     }
 
     /**
@@ -73,24 +72,24 @@ public class ATM {
 
     /**
      * Construct an ATM with a list of buckets in which the notes will
-     * be transferred to this ATM and the dispense algorithm specified
+     * be transferred to this ATM and the dispense strategy specified
      *
      * @param buckets   a list of buckets contains notes
-     * @param algorithm the note dispense algorithm
+     * @param strategy the note dispense strategy
      */
-    public ATM(List<Bucket> buckets, DispenseAlgorithm algorithm) {
-        init(algorithm, buckets);
+    public ATM(List<Bucket> buckets, DispenseStrategy strategy) {
+        init(strategy, buckets);
     }
 
     /**
-     * Set notes dispense algorithm to this ATM
+     * Set notes dispense strategy to this ATM
      *
-     * @param algorithm the dispense algorithm
+     * @param strategy the dispense strategy
      * @return the ATM instance
      */
-    public ATM setAlgorithm(DispenseAlgorithm algorithm) {
-        E.NPE(algorithm);
-        this.algorithm = algorithm;
+    public ATM setStrategy(DispenseStrategy strategy) {
+        E.NPE(strategy);
+        this.strategy = strategy;
         return this;
     }
 
@@ -113,7 +112,7 @@ public class ATM {
      */
     private void fill(List<Bucket> buckets) {
         for (Bucket bucket : buckets) {
-            maxValue += bucket.value();
+            totalValue += bucket.value();
             bucketByType(bucket.type()).transferFrom(bucket);
         }
     }
@@ -121,13 +120,13 @@ public class ATM {
     /**
      * Initialize the bucket instances in this ATM
      *
-     * @param algorithm the dispense algorithm
+     * @param algorithm the dispense strategy
      * @param buckets   a list of buckets contains notes to be filled
      *                  into buckets of this ATM
      * @return this ATM instance
      */
-    private void init(DispenseAlgorithm algorithm, List<Bucket> buckets) {
-        setAlgorithm(algorithm);
+    private void init(DispenseStrategy algorithm, List<Bucket> buckets) {
+        setStrategy(algorithm);
         for (NoteType type : NoteType.values()) {
             this.buckets.put(type, Bucket.of(type));
         }
@@ -158,10 +157,11 @@ public class ATM {
         return bucketList.map(BucketView.F.CONSTRUCTOR);
     }
 
-    // revert the dispense operation
+    // revert the dispense operation from
+    // a collection of buckets
     private void revert(Collection<Bucket> buckets) {
         for (Bucket bucket : buckets) {
-            maxValue += bucket.value();
+            totalValue += bucket.value();
             bucketByType(bucket.type()).transferFrom(bucket);
         }
     }
@@ -175,23 +175,27 @@ public class ATM {
      * @return a list of buckets contains notes been dispensed from the ATM
      * @throws org.greenlaw110.atmsim.NoteDispenseException if the ATM failed
      *                                                      to dispense the required money value
-     * @see DispenseAlgorithm#comparator(int)
+     * @see DispenseStrategy#comparator(int)
      */
     public List<Bucket> dispense(int value) throws NoteDispenseException {
-        if (value > maxValue || value % NoteType.GCD_VALUE != 0) {
+        E.illegalArgumentIf(value < 0, "oops, can't dispense notes for negative value");
+        if (value > totalValue || value % NoteType.GCD_VALUE != 0) {
             throw new NoteDispenseException(value);
         }
-        C.List<Bucket> output = C.newList();
+        C.List<Bucket> notes = C.newList();
         int originalValue = value;
         try {
             while (value > 0) {
-                Comparator<Bucket> cmp = algorithm.comparator(value);
+                // sort/filter available buckets for notes dispense
+                Comparator<Bucket> cmp = strategy.comparator(value);
                 C.List<Bucket> l = bucketList.sort(cmp).filter(F.filter(value));
                 if (l.isEmpty()) {
                     throw new NoteDispenseException(originalValue);
                 }
-                Bucket atmBucket = l.first();
 
+                // calculate at most how many notes we need to dispense
+                // from the available bucket
+                Bucket atmBucket = l.first();
                 NoteType noteType = atmBucket.type();
                 int noteValue = noteType.value();
                 int remainder = value % noteValue;
@@ -199,38 +203,34 @@ public class ATM {
                 value = remainder;
                 int noteCount = dispenseValue / noteValue;
 
+                // check if there are enough notes in our bucket
                 int transferCount = Math.min(noteCount, atmBucket.noteCount());
                 if (transferCount < noteCount) {
                     dispenseValue = transferCount * noteValue;
                     value += (noteCount - transferCount) * noteValue;
                 }
 
+                // prepare the dispense bucket and commit notes transfer
                 Bucket bucket = Bucket.of(noteType);
                 bucket.transferFrom(atmBucket, transferCount);
-                maxValue -= dispenseValue;
-                output.add(bucket);
+                totalValue -= dispenseValue;
+                notes.add(bucket);
             }
-            return output;
+            return notes;
         } catch (NoteDispenseException e) {
-            revert(output);
+            revert(notes);
             throw e;
         } catch (RuntimeException e) {
-            revert(output);
+            revert(notes);
             throw e;
         }
     }
 
     /**
-     * Returns the total value of all notes in
-     * this ATM
+     * Returns the total value of all notes in this ATM
      */
     public int value() {
-        return bucketList.reduce(0, N.F.adder(new _.F1<Bucket, Integer>() {
-            @Override
-            public Integer apply(Bucket bucket) throws NotAppliedException, _.Break {
-                return bucket.value();
-            }
-        }, Integer.class));
+        return bucketList.reduce(0, N.F.adder(Bucket.F.VALUE_OF, Integer.class));
     }
 
     @Override

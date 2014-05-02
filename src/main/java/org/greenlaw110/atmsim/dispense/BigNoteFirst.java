@@ -1,7 +1,7 @@
 package org.greenlaw110.atmsim.dispense;
 
 import org.greenlaw110.atmsim.Bucket;
-import org.greenlaw110.atmsim.DispenseAlgorithm;
+import org.greenlaw110.atmsim.DispenseStrategy;
 
 import java.util.Comparator;
 
@@ -10,7 +10,7 @@ import java.util.Comparator;
  * if the total value of the bucket is sufficient (ie. greater than
  * or equals to the value specified)
  */
-public class BigNoteFirst implements DispenseAlgorithm {
+public class BigNoteFirst implements DispenseStrategy {
     @Override
     public Comparator<Bucket> comparator(final int value) {
         return new Comparator<Bucket>() {

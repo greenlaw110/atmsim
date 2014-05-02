@@ -4,7 +4,6 @@ import jline.console.ConsoleReader;
 import jline.console.completer.StringsCompleter;
 import org.greenlaw110.atmsim.ATM;
 import org.greenlaw110.atmsim.Bucket;
-import org.greenlaw110.atmsim.NoteDispenseException;
 import org.greenlaw110.atmsim.NoteType;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
@@ -25,13 +24,11 @@ public class Shell {
 
     private ATM atm;
 
-    /**
-     * The command registry
-     */
+    // keep track of all supported commands
     private C.List<Command> commands = C.newList();
 
     private Shell() {
-        register(new Help(), new Exit(), new CreateATM(), new ATMState(), new Dispense());
+        register(new Help(), new Exit(), CreateATM.INSTANCE, new ATMState(), new Dispense());
     }
 
     ATM atm() {
@@ -50,18 +47,6 @@ public class Shell {
         Bucket tw = Bucket.of(NoteType.twentieth, twentiesNotes);
         Bucket fi = Bucket.of(NoteType.fiftieth, fiftiesNotes);
         atm = new ATM(C.list(tw, fi));
-    }
-
-    /**
-     * Dispense notes from the atm for total amount specified
-     *
-     * @param value the total amount of money
-     * @return a list of bucket contains the notes dispensed from the ATM
-     * @throws NoteDispenseException if the atm cannot dispense
-     *         specified amount of money
-     */
-    List<Bucket> dispense(int value) throws NoteDispenseException {
-        return atm.dispense(value);
     }
 
     /**
@@ -96,7 +81,7 @@ public class Shell {
 
         if (null == atm()) {
             console.print("no atm found. prepare to create default atm:");
-            findCommand("create_atm").handleEvent(console);
+            CreateATM.INSTANCE.handleEvent(console);
         }
 
         String line;
