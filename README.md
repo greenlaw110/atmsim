@@ -36,13 +36,13 @@ Type `help` to see the help message:
 
 ```
 atm>help
-help    Show this help message
-exit    exit this atm simulator program.
-create_atm    create an ATM with notes number specified.
-        Usage: create_atm [-20 <number of twenties notes>] [-50 <number of fifties notes]
-atm_state    report atm state
-dispense    dispense notes from ATM. Usage:
-        dispense <value>
+help: Show this help message
+exit: exit this atm simulator program.
+create_atm: create an ATM with notes number specified.
+    Usage: create_atm [-20 <number of twenties notes>] [-50 <number of fifties notes]
+atm_state: report atm state
+dispense: dispense notes from ATM.
+    Usage: dispense <value>
 ```
 
 Type `atm_state` to view current state of the atm:
