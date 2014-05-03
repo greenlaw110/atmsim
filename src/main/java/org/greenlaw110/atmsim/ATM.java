@@ -82,7 +82,7 @@ public class ATM {
      * Construct an ATM with a list of buckets in which the notes will
      * be transferred to this ATM and with dispense strategy specified
      *
-     * @param buckets   a list of buckets contains notes
+     * @param buckets  a list of buckets contains notes
      * @param strategy the note dispense strategy
      */
     public ATM(Iterable<? extends Bucket> buckets, DispenseStrategy strategy) {
@@ -115,7 +115,7 @@ public class ATM {
     }
 
     private void transferFrom(Iterable<? extends Bucket> buckets) {
-        for (Bucket bucket: buckets) {
+        for (Bucket bucket : buckets) {
             value += bucket.value();
             this.buckets.get(bucket.type()).transferFrom(bucket);
         }
@@ -123,6 +123,7 @@ public class ATM {
 
     /**
      * Set the {@link org.greenlaw110.atmsim.NoteDeckFormat format}
+     *
      * @param format
      * @return this ATM instance
      */
@@ -146,6 +147,7 @@ public class ATM {
 
     /**
      * Get the dispense strategy associated with the ATM
+     *
      * @return the strategy
      */
     public DispenseStrategy getStrategy() {
@@ -172,18 +174,19 @@ public class ATM {
      * Calculate remainder that should be deduct from the value specified, so that
      * the rest value is divisible by the note type value, and the quotient shall
      * not exceed the {@code maxNotes} specified.
-     *
+     * <p/>
      * <p>The {@code others} is note type of other bucket in the
-     * ATM with notes support the dispense of the value. This parameter can
-     * be used by the strategy to adjust the remainder calculation</p>
+     * ATM with notes support the dispense of the value. This
+     * parameter is used to adjust the remainder calculation</p>
+     * <p/>
+     * <p>It is possible to identify the value cannot be dispensed
+     * during the calculation. Then it should return an negative
+     * number indicate service fail</p>
      *
-     * <p>It is possible for the strategy to identify the value is not
-     * a combination that could be service. Then it should return an
-     * negative number indicate service fail</p>
-     *
-     * @param value the value to be dispensed from the ATM
-     * @param noteValue the value of the note type
-     * @param maxNotes the maximum number of notes in the bucket of the type specified
+     * @param value      the value to be dispensed from the ATM
+     * @param noteValue  the value of the note type
+     * @param maxNotes   the maximum number of notes in the bucket of the
+     *                   type specified
      * @param otherTypes contains note value of other available buckets
      * @return the remainder.
      */
@@ -235,8 +238,8 @@ public class ATM {
      *
      * @param value the money value to be dispensed from the ATM
      * @return a list of buckets contains notes been dispensed from the ATM
-     * @throws org.greenlaw110.atmsim.NoteDispenseException if the ATM failed
-     *                                                      to dispense the required money value
+     * @throws NoteDispenseException if the ATM failed to dispense the
+     *                               required money value
      * @see DispenseStrategy#comparator()
      */
     public List<Bucket> dispense(int value) throws NoteDispenseException {
@@ -256,7 +259,7 @@ public class ATM {
                 }
 
                 int v0 = value;
-                for (Bucket atmBucket: l) {
+                for (Bucket atmBucket : l) {
                     int maxNotes = atmBucket.noteCount();
                     int noteValue = atmBucket.noteTypeValue();
                     List<Integer> others = l.drop(1).map(new _.F1<Bucket, Integer>() {
@@ -341,6 +344,7 @@ public class ATM {
 
         /**
          * Returns a predicate that find bucket by note type
+         *
          * @param type
          * @return a Predicate that test if a bucket matches the type specified
          */
