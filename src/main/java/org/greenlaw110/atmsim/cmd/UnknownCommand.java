@@ -9,7 +9,11 @@ import java.io.IOException;
  */
 public class UnknownCommand extends CommandBase {
 
-    static final UnknownCommand INSTANCE = new UnknownCommand();
+    private String cmd;
+
+    public UnknownCommand(String cmd) {
+        this.cmd = cmd;
+    }
 
     @Override
     public String name() {
@@ -18,6 +22,13 @@ public class UnknownCommand extends CommandBase {
 
     @Override
     public void handleEvent(ConsoleReader console, String... args) throws IOException {
+        try {
+            Integer.parseInt(cmd);
+            Dispense.INSTANCE.handleEvent(console, cmd);
+            return;
+        } catch (NumberFormatException e) {
+
+        }
         echo(console, "Unknown command");
     }
 }

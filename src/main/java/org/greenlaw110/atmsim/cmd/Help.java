@@ -25,7 +25,7 @@ public class Help extends CommandBase {
         if (args.length > 0) {
             String nm = args[0];
             Command cmd = sh().findCommand(nm);
-            if (cmd == UnknownCommand.INSTANCE) {
+            if (cmd instanceof UnknownCommand) {
                 error("Unknown command: %s", nm);
             }
             echo(console, cmd.help());

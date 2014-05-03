@@ -194,7 +194,15 @@ public class ATM {
         int quotient = value / noteValue;
         int remainder = value % noteValue;
 
-        if (remainder != 0) {
+        boolean needsFurtherCheck = remainder != 0;
+        if (!needsFurtherCheck) {
+            if (quotient > maxNotes) {
+                remainder = remainder + noteValue * (quotient - maxNotes);
+            }
+            needsFurtherCheck = quotient >= maxNotes;
+        }
+
+        if (needsFurtherCheck) {
             // we need to make sure remainder be a multiplication of
             // any one of other note types.
             // otherwise we will fail to dispense some simple
@@ -213,6 +221,11 @@ public class ATM {
                 for (remainder = remainder + noteValue; remainder <= value; remainder += noteValue) {
                     for (Integer v : otherTypes) {
                         if (remainder % v == 0) {
+                            quotient = (value - remainder) / noteValue;
+                            if (quotient > maxNotes) {
+                                remainder = remainder + noteValue * (quotient - maxNotes - 1);
+                                continue;
+                            }
                             ok = true;
                             break;
                         }
@@ -220,12 +233,8 @@ public class ATM {
                     if (ok) break;
                 }
                 if (!ok) return -1;
-                quotient = (value - remainder) / noteValue;
-            }
-        }
 
-        if (quotient > maxNotes) {
-            remainder = remainder + noteValue * (quotient - maxNotes);
+            }
         }
 
         return remainder;

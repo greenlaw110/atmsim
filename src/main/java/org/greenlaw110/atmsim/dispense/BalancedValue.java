@@ -17,7 +17,8 @@ public class BalancedValue implements DispenseStrategy {
     private static _.Comparator<Bucket> VALUE_DESC = new _.Comparator<Bucket>() {
         @Override
         public int compare(Bucket o1, Bucket o2) {
-            return o2.value() - o1.value();
+            int n = o2.value() - o1.value();
+            return n != 0 ? n : o2.noteTypeValue() - o1.noteTypeValue();
         }
     };
 

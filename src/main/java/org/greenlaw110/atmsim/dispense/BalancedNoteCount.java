@@ -20,7 +20,8 @@ public class BalancedNoteCount implements DispenseStrategy {
     private static _.Comparator<Bucket> NOTES_COUNT_DESC = new _.Comparator<Bucket>() {
         @Override
         public int compare(Bucket o1, Bucket o2) {
-            return o2.noteCount() - o1.noteCount();
+            int n = o2.noteCount() - o1.noteCount();
+            return n != 0 ? n : o2.noteTypeValue() - o1.noteTypeValue();
         }
     };
 

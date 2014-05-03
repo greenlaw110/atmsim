@@ -76,7 +76,7 @@ public class StrategyTest extends TestBase {
     @Test(expected = NoteDispenseException.class)
     public void testBigNoteFirstFail() throws NoteDispenseException {
         setup(BigNoteFirst.INSTANCE, 10, 10);
-        C.List<Integer> sequence = C.list(300, 100, 250);
+        C.List<Integer> sequence = C.list(400, 100, 150);
         for (Integer i : sequence) {
             atm.dispense(i);
         }
@@ -88,23 +88,19 @@ public class StrategyTest extends TestBase {
     @Test
     public void testBalancedNoteCountSuccess() throws NoteDispenseException {
         setup(BalancedNoteCount.INSTANCE, 10, 10);
-        C.List<Integer> sequence = C.list(300, 100, 250);
+        C.List<Integer> sequence = C.list(400, 100, 150);
         for (Integer i : sequence) {
             atm.dispense(i);
         }
     }
 
     /**
-     * The same configuration and sequence still not workable for
-     * {@link org.greenlaw110.atmsim.dispense.BalancedValue} strategy
-     * even it is an adaptable strategy
-     *
      * @see #testBigNoteFirstFail()
      */
-    @Test(expected = NoteDispenseException.class)
+    @Test
     public void testBalancedValueFail() throws NoteDispenseException {
         setup(BalancedValue.INSTANCE, 10, 10);
-        C.List<Integer> sequence = C.list(300, 100, 250);
+        C.List<Integer> sequence = C.list(400, 100, 150);
         for (Integer i : sequence) {
             atm.dispense(i);
         }
@@ -116,7 +112,8 @@ public class StrategyTest extends TestBase {
      * with each of them are combination of multiplication of $20 and $50
      */
     private void monkeyTest(DispenseStrategy strategy) throws NoteDispenseException {
-        setup(strategy, Integer.MAX_VALUE / (2 * 20), Integer.MAX_VALUE / (2 * 50));
+        int MAX_VALUE = Integer.MAX_VALUE;
+        setup(strategy, MAX_VALUE / (2 * 20), MAX_VALUE / (2 * 50));
         for (int i = 0; i < 10000; ++i) {
             int t2 = _.random(C.range(0, 250)), t5 = _.random(C.range(0, 100));
             int value = t2 * 20 + t5 * 50;
@@ -152,8 +149,7 @@ public class StrategyTest extends TestBase {
     }
 
     /**
-     * This test case captures the failed dispense value found by
-     * {@link #monkeyTestBigNoteFirst()}
+     * This failure tests captured for BigNoteFirst strategy
      *
      * @throws NoteDispenseException
      */
@@ -164,8 +160,22 @@ public class StrategyTest extends TestBase {
     }
 
     /**
-     * This test case captures the failed dispense value found by
-     * {@link #monkeyTestBalancedValue()}
+     * This failure tests captured for BalancedNoteCount strategy
+     *
+     * @throws NoteDispenseException
+     */
+    @Test
+    public void BalancedNoteCountIssueCases() throws NoteDispenseException {
+        setup(BalancedNoteCount.INSTANCE, 100, 100);
+        atm.dispense(20 * 149 + 50 * 95);
+        setup(BalancedNoteCount.INSTANCE, 100, 40);
+        atm.dispense(20 * 87 + 50 * 40);
+        setup(BalancedNoteCount.INSTANCE, 100, 100);
+        atm.dispense(20 * 114 + 50 * 1);
+    }
+
+    /**
+     * This failure tests captured for BalancedValue strategy
      *
      * @throws NoteDispenseException
      */

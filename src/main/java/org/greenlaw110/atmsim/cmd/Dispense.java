@@ -20,6 +20,8 @@ import java.util.List;
  */
 public class Dispense extends CommandBase {
 
+    public static Dispense INSTANCE = new Dispense();
+
     @Override
     public String help() {
         return "dispense notes from ATM. Usage: \n\t" +

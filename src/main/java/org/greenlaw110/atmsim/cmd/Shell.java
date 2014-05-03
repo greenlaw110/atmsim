@@ -65,7 +65,7 @@ public class Shell {
     }
 
     Command findCommand(String name) {
-        return commands.findFirst(F.CMD_NAME.andThen(_.F.eq().curry(name))).orElse(UnknownCommand.INSTANCE);
+        return commands.findFirst(F.CMD_NAME.andThen(_.F.eq().curry(name))).orElse(new UnknownCommand(name));
     }
 
     private List<String> completeWords() {
