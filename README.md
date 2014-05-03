@@ -138,9 +138,9 @@ Program Dependencies
 ------------------------
 
 * [junit](http://junit.org): Used to do unit test
-* [osgl-tool](https://github.com/greenlaw110/java-tool): My opensource project that provides a library help me appling funcitonal programming in Java 6/7. It also provides a lot an utilties that make Java programming be more fun and more expressive
-* [jcommander](http://jcommander.org/): Used to process command line arguments, something like '-20 100 -50 60' etc
-* [jline](http://jline.sourceforge.net/): An nice library to provide console programming support
+* [osgl-tool](https://github.com/greenlaw110/java-tool): My open source library that help me applying functional programming in Java 6/7. It also provides a lot an utilities that make Java programming be more fun and more expressive
+* [jcommander](http://jcommander.org/): Used to process command line arguments, something like '-20 100 -50 60' etc. I use it to parse `atm` command arguments
+* [jline](http://jline.sourceforge.net/): An nice library to provide console programming support. I use it to program the command line shell to the ATM simulator
 
 Code Metric
 ------------------
