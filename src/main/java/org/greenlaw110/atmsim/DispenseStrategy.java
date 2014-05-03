@@ -13,4 +13,5 @@ public interface DispenseStrategy {
      * @return a comparator
      */
     Comparator<Bucket> comparator();
+
 }

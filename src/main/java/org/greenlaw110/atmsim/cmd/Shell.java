@@ -28,7 +28,7 @@ public class Shell {
     private C.List<Command> commands = C.newList();
 
     private Shell() {
-        register(new Help(), new Exit(), AtmCommand.INSTANCE, new Dispense());
+        register(new Help(), new Exit(), AtmCommand.INSTANCE, new Dispense(), new Strategy());
     }
 
     ATM atm() {

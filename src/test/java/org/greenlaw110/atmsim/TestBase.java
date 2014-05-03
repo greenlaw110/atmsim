@@ -2,12 +2,17 @@ package org.greenlaw110.atmsim;
 
 import org.junit.Assert;
 import org.junit.runner.JUnitCore;
+import org.osgl._;
 import org.osgl.util.S;
 
 /**
  * Provides unit test utility methods
  */
 public abstract class TestBase extends Assert {
+    protected void neq(Object o1, Object o2) {
+        no(_.eq(o1, o2));
+    }
+
     protected void eq(Object o1, Object o2) {
         assertEquals(o1, o2);
     }

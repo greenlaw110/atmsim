@@ -45,6 +45,12 @@ atm: create an ATM or view state of current ATM. Usage:
     atm: view ATM state
 dispense: dispense notes from ATM. Usage:
     dispense <value>
+strategy: set/view atm dispense strategy. Usage:
+    strategy: show current strategy
+    strategy <strategy>: set strategy. Available strategies:
+        1 - Big note first: choose larger denomination notes first
+        2 - Balanced note count: keep balance between buckets by note count
+        3 - Balanced value: keep balance between buckets by value
 ```
 
 Type `atm` to view current state of the atm:
@@ -65,6 +71,7 @@ ATM state
 20th X 1000 = 20000
 50th X 400 = 20000
 ```
+
 Type `dispense` to dispense notes from the atm:
 
 ```
@@ -78,7 +85,38 @@ ATM state
 50th X 391 = 19550
 ```
 
+Type `strategy` to view/change dispense strategy:
+
+```
+atm>help strategy
+set/view atm dispense strategy. Usage:
+    strategy: show current strategy
+    strategy <strategy>: set strategy. Available strategies:
+        1 - Big note first: choose larger denomination notes first
+        2 - Balanced note count: keep balance between buckets by note count
+        3 - Balanced value: keep balance between buckets by value
+
+atm>strategy
+Big note first: choose larger denomination notes first
+
+atm>strategy 2
+Strategy is now set to Balanced note count: keep balance between buckets by note count
+```
+
 **Note** you can use word complete like what you did in linux shell. E.g. type `di` and then type tab you will get `dispense` immediately
+
+Dispense Strategy
+--------------------
+
+This program implemented three dispense strategies:
+
+1. `BigNoteFirst`. This strategy always choose larger denomination notes if possible
+
+2. `BalancedNoteCount`. This strategy keeps balance among buckets based on their remaining notes
+
+3. `BalancedValue`. This strategy keeps balance among buckets based on their remaining value
+
+The default strategy is `BalancedNoteCount`
 
 Program Dependencies
 ------------------------
@@ -97,20 +135,21 @@ Main source code
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Java                            19            158            344            597
+Java                            22            201            403            773
 -------------------------------------------------------------------------------
-SUM:                            19            158            344            597
+SUM:                            22            201            403            773
 -------------------------------------------------------------------------------
 ```
 
 Test source code
 
 ```
+
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Java                             2             27              7            138
+Java                             3             51             38            255
 -------------------------------------------------------------------------------
-SUM:                             2             27              7            138
+SUM:                             3             51             38            255
 -------------------------------------------------------------------------------
 ```

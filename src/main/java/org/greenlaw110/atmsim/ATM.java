@@ -1,7 +1,8 @@
 package org.greenlaw110.atmsim;
 
-import org.greenlaw110.atmsim.dispense.BigNoteFirst;
+import org.greenlaw110.atmsim.dispense.BalancedNoteCount;
 import org.osgl._;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -31,8 +32,13 @@ public class ATM {
     private C.List<Bucket> bucketList;
 
     /**
+     * A readonly view of {@link #bucketList}
+     */
+    private C.List<BucketView> bucketListView;
+
+    /**
      * The dispense strategy. Default value is
-     * {@link org.greenlaw110.atmsim.dispense.BigNoteFirst}
+     * {@link org.greenlaw110.atmsim.dispense.BalancedNoteCount}
      */
     private DispenseStrategy strategy;
 
@@ -52,7 +58,7 @@ public class ATM {
      * Construct an empty ATM without any notes
      */
     public ATM() {
-        this(new BigNoteFirst());
+        this(new BalancedNoteCount());
     }
 
     /**
@@ -69,7 +75,7 @@ public class ATM {
      * @param buckets a list of buckets contains notes
      */
     public ATM(Iterable<? extends Bucket> buckets) {
-        this(buckets, new BigNoteFirst());
+        this(buckets, new BalancedNoteCount());
     }
 
     /**
@@ -100,6 +106,10 @@ public class ATM {
 
         // this will be an readonly immutable list
         bucketList = C.list(this.buckets.values());
+
+        // use lazy map view so that we always get backed by
+        // bucketList
+        bucketListView = bucketList.lazy().map(BucketView.F.CONSTRUCTOR);
 
         transferFrom(buckets);
     }
@@ -135,19 +145,87 @@ public class ATM {
     }
 
     /**
+     * Get the dispense strategy associated with the ATM
+     * @return the strategy
+     */
+    public DispenseStrategy getStrategy() {
+        return strategy;
+    }
+
+    /**
      * Returns a read only view to all buckets of this ATM
      *
      * @return a list of {@link org.greenlaw110.atmsim.BucketView} of all
      * buckets in this ATM
      */
     public List<BucketView> buckets() {
-        return bucketList.map(BucketView.F.CONSTRUCTOR);
+        return bucketListView;
     }
 
     // revert the dispense operation from
     // a collection of buckets
     private void revert(Iterable<? extends Bucket> buckets) {
         transferFrom(buckets);
+    }
+
+    /**
+     * Calculate remainder that should be deduct from the value specified, so that
+     * the rest value is divisible by the note type value, and the quotient shall
+     * not exceed the {@code maxNotes} specified.
+     *
+     * <p>The {@code others} is note type of other bucket in the
+     * ATM with notes support the dispense of the value. This parameter can
+     * be used by the strategy to adjust the remainder calculation</p>
+     *
+     * <p>It is possible for the strategy to identify the value is not
+     * a combination that could be service. Then it should return an
+     * negative number indicate service fail</p>
+     *
+     * @param value the value to be dispensed from the ATM
+     * @param noteValue the value of the note type
+     * @param maxNotes the maximum number of notes in the bucket of the type specified
+     * @param otherTypes contains note value of other available buckets
+     * @return the remainder.
+     */
+    private int findRemainder(int value, int noteValue, int maxNotes, List<Integer> otherTypes) {
+        int quotient = value / noteValue;
+        int remainder = value % noteValue;
+
+        if (remainder != 0) {
+            // we need to make sure remainder be a multiplication of
+            // any one of other note types.
+            // otherwise we will fail to dispense some simple
+            // value like 80
+            boolean ok = false;
+            for (Integer v : otherTypes) {
+                if (remainder % v == 0) {
+                    ok = true;
+                    break;
+                }
+            }
+
+            if (!ok) {
+                // we need to increase the remainder by N times noteValue
+                // so that it can be divided by any one in the other types
+                for (remainder = remainder + noteValue; remainder <= value; remainder += noteValue) {
+                    for (Integer v : otherTypes) {
+                        if (remainder % v == 0) {
+                            ok = true;
+                            break;
+                        }
+                    }
+                    if (ok) break;
+                }
+                if (!ok) return -1;
+                quotient = (value - remainder) / noteValue;
+            }
+        }
+
+        if (quotient > maxNotes) {
+            remainder = remainder + noteValue * (quotient - maxNotes);
+        }
+
+        return remainder;
     }
 
     /**
@@ -177,28 +255,35 @@ public class ATM {
                     throw new NoteDispenseException(originalValue);
                 }
 
-                // calculate at most how many notes we need to dispense
-                // from the available bucket
-                Bucket atmBucket = l.first();
-                NoteType noteType = atmBucket.type();
-                int noteValue = noteType.value();
-                int remainder = value % noteValue;
-                int dispenseValue = value - remainder;
-                value = remainder;
-                int noteCount = dispenseValue / noteValue;
+                int v0 = value;
+                for (Bucket atmBucket: l) {
+                    int maxNotes = atmBucket.noteCount();
+                    int noteValue = atmBucket.noteTypeValue();
+                    List<Integer> others = l.drop(1).map(new _.F1<Bucket, Integer>() {
+                        @Override
+                        public Integer apply(Bucket bucket) throws NotAppliedException, _.Break {
+                            return bucket.noteTypeValue();
+                        }
+                    });
+                    int remainder = findRemainder(value, noteValue, maxNotes, others);
+                    if (remainder < 0) throw new NoteDispenseException(originalValue);
+                    if (remainder >= value) continue;
 
-                // check if there are enough notes in our bucket
-                int transferCount = Math.min(noteCount, atmBucket.noteCount());
-                if (transferCount < noteCount) {
-                    dispenseValue = transferCount * noteValue;
-                    value += (noteCount - transferCount) * noteValue;
+                    int dispenseValue = value - remainder;
+                    int transferCount = dispenseValue / noteValue;
+
+                    // prepare the dispense bucket and commit notes transfer
+                    Bucket bucket = Bucket.of(atmBucket.type());
+                    bucket.transferFrom(atmBucket, transferCount);
+                    cash.add(bucket);
+
+                    this.value -= dispenseValue;
+                    value = remainder;
                 }
 
-                // prepare the dispense bucket and commit notes transfer
-                Bucket bucket = Bucket.of(noteType);
-                bucket.transferFrom(atmBucket, transferCount);
-                this.value -= dispenseValue;
-                cash.add(bucket);
+                if (v0 == value) {
+                    throw new NoteDispenseException(originalValue);
+                }
             }
         } catch (NoteDispenseException e) {
             revert(cash);
@@ -220,6 +305,11 @@ public class ATM {
     @Override
     public String toString() {
         return "ATM state\n" + fmt.format(bucketList);
+    }
+
+    // for unit test purpose
+    public Bucket _byType(NoteType type) {
+        return bucketList.findFirst(F.byType(type)).get();
     }
 
     /**
@@ -245,6 +335,20 @@ public class ATM {
                 @Override
                 public boolean test(Bucket bucket) {
                     return bucket.noteCount() > 0 && bucket.noteTypeValue() <= value;
+                }
+            };
+        }
+
+        /**
+         * Returns a predicate that find bucket by note type
+         * @param type
+         * @return a Predicate that test if a bucket matches the type specified
+         */
+        static final _.Predicate<Bucket> byType(final NoteType type) {
+            return new _.Predicate<Bucket>() {
+                @Override
+                public boolean test(Bucket bucket) {
+                    return bucket.type() == type;
                 }
             };
         }

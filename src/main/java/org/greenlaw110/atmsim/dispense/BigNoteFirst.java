@@ -7,8 +7,11 @@ import java.util.Comparator;
 
 /**
  * This strategy choose bucket with larger denomination notes
+ * without regarding to ATM's buckets state
  */
 public class BigNoteFirst implements DispenseStrategy {
+
+    public static final BigNoteFirst INSTANCE = new BigNoteFirst();
 
     private static final Comparator<Bucket> CMP = new Comparator<Bucket>() {
         @Override
@@ -20,5 +23,10 @@ public class BigNoteFirst implements DispenseStrategy {
     @Override
     public Comparator<Bucket> comparator() {
         return CMP;
+    }
+
+    @Override
+    public String toString() {
+        return "Big note first: choose larger denomination notes first";
     }
 }

@@ -103,6 +103,11 @@ public class Bucket implements NoteDeck {
         return noteCount;
     }
 
+    @Override
+    public String toString() {
+        return NoteDeckFormat.INSTANCE.format(this);
+    }
+
     /**
      * Returns the value of the {@link #type() note type} of this bucket
      */
