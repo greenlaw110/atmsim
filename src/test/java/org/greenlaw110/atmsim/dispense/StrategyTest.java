@@ -4,6 +4,7 @@ import org.greenlaw110.atmsim.*;
 import org.junit.Test;
 import org.osgl._;
 import org.osgl.util.C;
+import org.osgl.util.N;
 
 /**
  * Test ATM dispense with different Strategies
@@ -118,7 +119,11 @@ public class StrategyTest extends TestBase {
         setup(strategy, Integer.MAX_VALUE / (2 * 20), Integer.MAX_VALUE / (2 * 50));
         for (int i = 0; i < 10000; ++i) {
             int t2 = _.random(C.range(0, 250)), t5 = _.random(C.range(0, 100));
-            atm.dispense(t2 * 20 + t5 * 50);
+            int value = t2 * 20 + t5 * 50;
+            int atmValue = atm.value();
+            C.List<Bucket> cash = C.list(atm.dispense(value));
+            eq(cash.reduce(0, N.F.adder(Bucket.F.VALUE_OF, Integer.class)), value);
+            eq(atmValue, atm.value() + value);
         }
     }
 
