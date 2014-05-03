@@ -99,8 +99,24 @@ set/view atm dispense strategy. Usage:
 atm>strategy
 Big note first: choose larger denomination notes first
 
+atm>dispense 100
+Successfully dispensed from ATM:
+50th X 2 = 100
+
+ATM state
+20th X 100 = 2000
+50th X 38 = 1900
+
 atm>strategy 2
 Strategy is now set to Balanced note count: keep balance between buckets by note count
+
+atm>dispense 100
+Successfully dispensed from ATM:
+20th X 5 = 100
+
+ATM state
+20th X 95 = 1900
+50th X 38 = 1900
 ```
 
 **Note** you can use word complete like what you did in linux shell. E.g. type `di` and then type tab you will get `dispense` immediately
