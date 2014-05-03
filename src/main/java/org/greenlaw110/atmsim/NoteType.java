@@ -20,7 +20,7 @@ public enum NoteType {
     }
 
     /**
-     * The greatest common divisor value of values of all note types
+     * The greatest common divisor value of all note type values
      */
     public static final int GCD_VALUE = gcdValue();
 

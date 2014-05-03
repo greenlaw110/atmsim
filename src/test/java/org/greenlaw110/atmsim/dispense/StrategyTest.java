@@ -163,6 +163,12 @@ public class StrategyTest extends TestBase {
         atm.dispense(20 * 219 + 50 * 41);
     }
 
+    /**
+     * This test case captures the failed dispense value found by
+     * {@link #monkeyTestBalancedValue()}
+     *
+     * @throws NoteDispenseException
+     */
     @Test
     public void BalancedValueIssueCases() throws NoteDispenseException {
         setup(BalancedValue.INSTANCE, Integer.MAX_VALUE / (2 * 20), Integer.MAX_VALUE / (2 * 50));

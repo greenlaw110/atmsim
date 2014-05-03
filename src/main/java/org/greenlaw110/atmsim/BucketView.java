@@ -50,6 +50,15 @@ public class BucketView implements NoteDeck {
         return bucket.value();
     }
 
+    @Override
+    public String toString() {
+        return NoteDeckFormat.INSTANCE.format(this);
+    }
+
+    public static BucketView of(Bucket bucket) {
+        return new BucketView(bucket);
+    }
+
     /**
      * The function object namespace
      */

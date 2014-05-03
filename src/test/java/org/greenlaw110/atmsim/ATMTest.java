@@ -8,7 +8,10 @@ import org.osgl.util.N;
 import java.util.List;
 
 /**
- * Unit Test ATM
+ * Unit Test ATM include simple test cases of atm dispense.
+ *
+ * <p>For more sophisticated dispense test case please
+ * check out {@link org.greenlaw110.atmsim.dispense.StrategyTest}</p>
  */
 public class ATMTest extends TestBase {
     protected ATM atm;
@@ -40,7 +43,14 @@ public class ATMTest extends TestBase {
     }
 
     @Test
-    public void testSuccess0() {
+    public void testGetBucketView() throws NoteDispenseException {
+        atm.dispense(100);
+        List<BucketView> l = atm.buckets();
+        eq(l.toString(), "[20th X 3 = 60, 50th X 2 = 100]");
+    }
+
+    @Test
+    public void testDispenseNoteTypeValues() {
         try {
             for (NoteType type: NoteType.values()) {
                 setUp();
@@ -54,7 +64,8 @@ public class ATMTest extends TestBase {
         }
     }
 
-    public void testSuccess1() {
+    @Test
+    public void testDispenseValueOfATM() {
         try {
             int v = preparedValue();
             List<Bucket> buckets = atm.dispense(v);
@@ -65,65 +76,18 @@ public class ATMTest extends TestBase {
         }
     }
 
-    public void testSuccess2() {
-        try {
-            List<Bucket> buckets = atm.dispense(100);
-            yes(buckets.size() == 1);
-            yes(valuesOf(buckets) == 100);
-            yes(atm.value() == preparedValue() - 100);
-
-            int remaining = atm.value();
-
-            buckets = atm.dispense(40);
-            yes(valuesOf(buckets) == 40);
-            yes(atm.value() == remaining - 40);
-
-            remaining = atm.value();
-            buckets = atm.dispense(70);
-            yes(valuesOf(buckets) == 70);
-            yes(atm.value() == remaining - 70);
-        } catch (Exception e) {
-            fail();
-        }
-    }
-
     @Test
-    public void testSuccess3() {
-        try {
-            List<Bucket> buckets = atm.dispense(140);
-            yes(valuesOf(buckets) == 140);
-            yes(atm.value() == preparedValue() - 140);
-        } catch (NoteDispenseException e) {
-            fail();
-        }
-
-        try {
-            atm.dispense(preparedValue() - 140 - 1);
-            fail("There should be an NoteDispenseException thrown out");
-        } catch (NoteDispenseException e) {
-            yes(atm.value() == preparedValue() - 140);
-        }
-    }
-
-    @Test
-    public void testFail1() {
+    public void testFailWithIllegalCombination() {
         try {
             atm.dispense(30);
             fail();
         } catch (NoteDispenseException e) {
             yes(atm.value() == preparedValue());
         }
-
-        // make sure the max value check is still working
-        try {
-            atm.dispense(preparedValue());
-        } catch (NoteDispenseException e) {
-            fail();
-        }
     }
 
     @Test
-    public void testFail2() {
+    public void testFailWithTooLargeAmount() {
         try {
             atm.dispense(10000);
             fail();
