@@ -47,9 +47,6 @@ public class StrategyTest extends TestBase {
         atm.dispense(150);
         eq(b20.noteCount(), 100 - 5);
         eq(b50.noteCount(), 40 -1);
-
-        setup(BalancedNoteCount.INSTANCE, 10, 20);
-        atm.dispense(180);
     }
 
     @Test
@@ -61,9 +58,6 @@ public class StrategyTest extends TestBase {
         atm.dispense(100);
         int b20Cnt2 = b20.noteCount(), b50Cnt2 = b50.noteCount();
         yes(b20Cnt1 != b20Cnt2 && b50Cnt1 != b50Cnt2);
-
-        setup(BalancedNoteCount.INSTANCE, 100, 40);
-        atm.dispense(150);
     }
 
     /**
@@ -83,6 +77,8 @@ public class StrategyTest extends TestBase {
     }
 
     /**
+     * The same combination won't fail in balanced notes count strategy
+     *
      * @see #testBigNoteFirstFail()
      */
     @Test
@@ -95,10 +91,12 @@ public class StrategyTest extends TestBase {
     }
 
     /**
+     * The same combination won't fail in balanced value strategy
+     *
      * @see #testBigNoteFirstFail()
      */
     @Test
-    public void testBalancedValueFail() throws NoteDispenseException {
+    public void testBalancedValueSuccess() throws NoteDispenseException {
         setup(BalancedValue.INSTANCE, 10, 10);
         C.List<Integer> sequence = C.list(400, 100, 150);
         for (Integer i : sequence) {
@@ -166,8 +164,8 @@ public class StrategyTest extends TestBase {
      */
     @Test
     public void BalancedNoteCountIssueCases() throws NoteDispenseException {
-        setup(BalancedNoteCount.INSTANCE, 100, 100);
-        atm.dispense(20 * 149 + 50 * 95);
+        setup(BigNoteFirst.INSTANCE, 20, 9);
+        atm.dispense(20 * 1 + 50 * 10);
         setup(BalancedNoteCount.INSTANCE, 100, 40);
         atm.dispense(20 * 87 + 50 * 40);
         setup(BalancedNoteCount.INSTANCE, 100, 100);

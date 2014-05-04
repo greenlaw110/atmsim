@@ -195,11 +195,9 @@ public class ATM {
         int remainder = value % noteValue;
 
         boolean needsFurtherCheck = remainder != 0;
-        if (!needsFurtherCheck) {
-            if (quotient > maxNotes) {
-                remainder = remainder + noteValue * (quotient - maxNotes);
-            }
-            needsFurtherCheck = quotient >= maxNotes;
+        if (quotient > maxNotes) {
+            remainder = remainder + noteValue * (quotient - maxNotes);
+            if (quotient >= maxNotes) needsFurtherCheck = true;
         }
 
         if (needsFurtherCheck) {
