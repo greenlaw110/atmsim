@@ -1,7 +1,7 @@
 atmsim
 ======
 
-A ATM Simulator program implemented in Java with the following limits:
+An ATM Simulator program implemented in Java with the following limits:
 
 * It support $50 and $20 notes only. (Very easy to update the program to support all other types of notes)
 * It doesn't take concurrency into the consideration
